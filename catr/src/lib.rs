@@ -8,12 +8,12 @@ pub struct Config {
     number_nonblank_lines: bool,
 }
 
-pub fun get_args(){
-    let matches = App::new("catr")
-        .version("0.1.0")
-        .author("User01")
-        .about("Rust cat")
-        .arg()
+pub fn get_args() {
+    /*let matches = App::new("catr")
+    .version("0.1.0")
+    .author("User01")
+    .about("Rust cat")
+    .arg()*/
 }
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
