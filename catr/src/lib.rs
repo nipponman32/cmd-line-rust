@@ -1,7 +1,9 @@
 use clap::{App, Arg};
 use std::error::Error;
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Config {
@@ -23,31 +25,26 @@ pub fn get_args() -> MyResult<Config> {
                 .default_value("-"),
         )
         .arg(
-            Arg::with_name("number_lines")
-                .value_name("NUMBER_LINES")
-                .help("Show number lines")
-                .required(false)
+            Arg::with_name("number")
+                .long("number")
+                .help("Number lines")
+                .conflicts_with("number_nonblank")
                 .short("n")
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("number_nonblank_lines")
-                .value_name("NUMBER_NON_BLANK_LINES")
+            Arg::with_name("number_nonblank")
+                .long("number-nonblank")
                 .help("Number of lines with text")
                 .short("b")
-                .required(false)
                 .takes_value(false),
         )
         .get_matches();
 
-    let files_arg = matches.values_of_lossy("Files").unwrap();
-    let number_lines_arg = matches.is_present("NUMBER_LINES");
-    let blank_number_lines_arg = matches.is_present("NUMBER_NON_BLANK_LINES");
-
     Ok(Config {
-        files: files_arg,
-        number_lines: number_lines_arg,
-        number_nonblank_lines: blank_number_lines_arg,
+        files: matches.values_of_lossy("Files").unwrap(),
+        number_lines: matches.is_present("number"),
+        number_nonblank_lines: matches.is_present("number_nonblank"),
     })
 }
 
@@ -55,9 +52,48 @@ type MyResult<T> = Result<T, Box<dyn Error>>;
 
 pub fn run(config: Config) -> MyResult<()> {
     for filename in config.files {
-        match open(&filename) {
+        let h = open(&filename);
+        match h {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(_) => println!("Opened {}", filename),
+            Ok(hol) => {
+                let mut count = 0;
+                let mut count_nb = 0;
+
+                for line in hol.lines() {
+                    let output = String::from_str(&line.unwrap());
+                    let mut empty_line = false;
+                    if output.as_ref().unwrap() == "" {
+                        empty_line = true;
+                    }
+
+                    match (config.number_lines, config.number_nonblank_lines) {
+                        (true, _) => println!("{} {}", count, output.unwrap()),
+                        (false, true) => {
+                            let mut out = String::from("");
+                            println!(
+                                "{} {}",
+                                if empty_line {
+                                    out
+                                } else {
+                                    format!("{} {}", count_nb, output.as_ref().unwrap())
+                                },
+                                output.unwrap()
+                            )
+                        }
+                        (false, false) => println!("{}", output.unwrap()),
+                    }
+
+                    if config.number_nonblank_lines {
+                        if empty_line {
+                            count_nb += 0;
+                        } else {
+                            count_nb += 1;
+                        }
+                    } else {
+                        count += 1;
+                    }
+                }
+            }
         }
     }
     Ok(())
