@@ -56,41 +56,21 @@ pub fn run(config: Config) -> MyResult<()> {
         match h {
             Err(err) => eprintln!("Failed to open {}: {}", filename, err),
             Ok(hol) => {
-                let mut count = 0;
-                let mut count_nb = 0;
+                let mut last_num = 0;
+                for (line_num, line_result) in hol.lines().enumerate() {
+                    let line = line_result?;
 
-                for line in hol.lines() {
-                    let output = String::from_str(&line.unwrap());
-                    let mut empty_line = false;
-                    if output.as_ref().unwrap() == "" {
-                        empty_line = true;
-                    }
-
-                    match (config.number_lines, config.number_nonblank_lines) {
-                        (true, _) => println!("{} {}", count, output.unwrap()),
-                        (false, true) => {
-                            let mut out = String::from("");
-                            println!(
-                                "{} {}",
-                                if empty_line {
-                                    out
-                                } else {
-                                    format!("{} {}", count_nb, output.as_ref().unwrap())
-                                },
-                                output.unwrap()
-                            )
-                        }
-                        (false, false) => println!("{}", output.unwrap()),
-                    }
-
-                    if config.number_nonblank_lines {
-                        if empty_line {
-                            count_nb += 0;
+                    if config.number_lines {
+                        println!("{:>6}\t{}", line_num + 1, line);
+                    } else if config.number_nonblank_lines {
+                        if !line.is_empty() {
+                            last_num += 1;
+                            println!("{:>6}\t{}", last_num, line);
                         } else {
-                            count_nb += 1;
+                            println!();
                         }
                     } else {
-                        count += 1;
+                        println!("{}", line);
                     }
                 }
             }
