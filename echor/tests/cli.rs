@@ -13,31 +13,6 @@ fn dies_no_args() -> TypeResult {
     Ok(())
 }
 
-#[test]
-fn hello1() -> TypeResult {
-    let outfile = "tests/expected/hello1.txt";
-    let expected = fs::read_to_string(outfile).unwrap();
-
-    let mut cmd = Command::cargo_bin("echor")?;
-    cmd.args(vec!["Hello".to_string(), "there".to_string()])
-        .assert()
-        .success()
-        .stdout(expected);
-    //cmd.arg("Hello").assert().success().stdout(expected);
-    Ok(())
-}
-
-#[test]
-fn hello2() -> TypeResult {
-    let expected = fs::read_to_string("tests/expected/hello2.txt")?;
-    let mut cmd = Command::cargo_bin("echor")?;
-    cmd.args(vec!["Hello", "there"])
-        .assert()
-        .success()
-        .stdout(expected);
-    Ok(())
-}
-
 fn runs(args: &[&str], expected_file: &str) -> TypeResult {
     let expected = fs::read_to_string(expected_file)?;
     Command::cargo_bin("echor")?
@@ -49,6 +24,21 @@ fn runs(args: &[&str], expected_file: &str) -> TypeResult {
 }
 
 #[test]
-fn hello_no_newline() -> TypeResult {
+fn hello1() -> TypeResult {
+    runs(&["Hello there"], "tests/expected/hello1.txt")
+}
+
+#[test]
+fn hello2() -> TypeResult {
+    runs(&["Hello", "there"], "tests/expected/hello2.txt")
+}
+
+#[test]
+fn hello1_no_newline() -> TypeResult {
     runs(&["Hello", "there", "-n"], "tests/expected/hello1.n.txt")
+}
+
+#[test]
+fn hello2_no_newline() -> TypeResult {
+    runs(&["-n", "Hello", "there"], "tests/expected/hello2.n.txt")
 }

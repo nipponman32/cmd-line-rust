@@ -3,7 +3,6 @@ use std::error::Error;
 use std::fmt::Debug;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct Config {
