@@ -14,30 +14,33 @@ pub fn get_args() -> MyResult<Config> {
         .author("Lawrence West nipponman32@protonmail.com")
         .about("Rust head")
         .arg(
+            Arg::with_name("lines")
+                .value_name("LINES")
+                .help("number of lines to print")
+                .required(true)
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("files")
                 .value_name("FILE")
                 .help("input files")
                 .multiple(true)
+                .required(true)
                 .default_value("-"),
-        )
-        .arg(
-            Arg::with_name("lines")
-                .value_name("LINES")
-                .help("number of lines to print")
-                .takes_value(true),
         )
         .arg(
             Arg::with_name("bytes")
                 .value_name("BYTES")
                 .help("Number of bytes to read")
+                .required(true)
                 .takes_value(true),
         )
         .get_matches();
 
     Ok(Config {
         files: matches.values_of_lossy("files").unwrap(),
-        lines: str::parse(&matches.value_of_lossy("lines").unwrap()).unwrap(),
-        bytes: Some(str::parse(&matches.value_of_lossy("bytes").unwrap()).unwrap()),
+        lines: parse_positive_int(&matches.value_of_lossy("lines").unwrap()).unwrap(),
+        bytes: Some(parse_positive_int(&matches.value_of_lossy("bytes").unwrap()).unwrap()),
     })
 }
 
